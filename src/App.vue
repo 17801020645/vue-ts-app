@@ -1,7 +1,6 @@
 <template>
   <div>
-    hello app
-    <el-button type="primary">primary</el-button>
+    <router-view></router-view>
   </div>
 </template>
 
