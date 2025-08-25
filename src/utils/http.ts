@@ -2,7 +2,8 @@ import axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:3000/', // 所有请求的基础URL
+  //   baseURL: 'http://localhost:3000/',  //所有请求的基础URL
+  baseURL: 'http://api.h5ke.top/', // 所有请求的基础URL
   timeout: 5000, // 请求超时时间（毫秒）
 });
 
