@@ -1,5 +1,8 @@
 import axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import store from '@/store';
+import type { StateAll } from '@/store';
+import { ElMessage } from 'element-plus';
 
 const instance = axios.create({
   //   baseURL: 'http://localhost:3000/',  //所有请求的基础URL
@@ -10,10 +13,10 @@ const instance = axios.create({
 // 请求拦截器 - 在发送请求前执行
 instance.interceptors.request.use(
   function (config) {
-    // 这里可以添加全局请求处理逻辑，例如：
-    // 1. 添加认证token
-    // 2. 设置请求头
-    // 3. 添加loading状态
+    if (config.headers) {
+      config.headers.Authorization = (store.state as StateAll).users.token;
+    }
+
     return config; // 必须返回修改后的配置对象
   },
   function (error) {
@@ -26,10 +29,13 @@ instance.interceptors.request.use(
 // 响应拦截器 - 在收到响应后执行
 instance.interceptors.response.use(
   function (response) {
-    // 这里可以添加全局响应处理逻辑，例如：
-    // 1. 统一处理响应数据结构
-    // 2. 根据状态码进行全局提示
-    // 3. 关闭loading状态
+    if (response.data.errmsg === 'token error') {
+      ElMessage.error('token error');
+      store.commit('users/clearToken');
+      setTimeout(() => {
+        window.location.replace('/login');
+      }, 1000);
+    }
     return response; // 返回响应对象
   },
   function (error) {
