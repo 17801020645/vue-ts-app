@@ -86,6 +86,7 @@ const detailState = reactive({
   text: '正常' as '正常' | '异常',
 });
 
+// 作用：如果有状态更新，更新统计数据
 // todo
 watchEffect((reset) => {
   const detailMonth = (signsInfos.value.detail as { [index: string]: unknown })[
@@ -127,6 +128,7 @@ watchEffect((reset) => {
     }
   }
 
+  //什么时候执行这个reset?， 在研究一下这个watchEffect
   reset(() => {
     detailState.type = 'success';
     detailState.text = '正常';
