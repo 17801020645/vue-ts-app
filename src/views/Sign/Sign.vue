@@ -145,7 +145,12 @@ const handleChange = () => {
 };
 
 const handleToException = () => {
-  router.push('/exception');
+  // router.push('/exception');
+  // 传参的写法
+  router.push({
+    path: '/exception',
+    query: { month: month.value },
+  });
 };
 
 const renderDate = (day: string) => {

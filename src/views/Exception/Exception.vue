@@ -58,11 +58,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+const route = useRoute();
+const router = useRouter();
 
 const date = new Date();
 const year = date.getFullYear();
-const month = ref(date.getMonth() + 1);
+const month = ref(Number(route.query.month) || date.getMonth() + 1);
+
+watch(month, () => {
+  router.push({
+    query: { month: month.value },
+  });
+});
 </script>
 
 <style scoped lang="scss">
