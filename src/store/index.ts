@@ -1,6 +1,7 @@
 import { createStore, useStore as baseUseStore } from 'vuex';
 import type { Store } from 'vuex';
 import type { InjectionKey } from 'vue';
+import VuexPersistence from 'vuex-persist';
 
 import users from './modules/users';
 import signs from './modules/signs';
@@ -26,6 +27,11 @@ export function useStore() {
   return baseUseStore(key);
 }
 
+const vuexLocal = new VuexPersistence<State>({
+  storage: window.localStorage,
+  reducer: (state) => ({ users: { token: (state as StateAll).users.token } }),
+});
+
 export default createStore({
   state: {},
   getters: {},
@@ -37,4 +43,5 @@ export default createStore({
     checks,
     news,
   },
+  plugins: [vuexLocal.plugin],
 });
