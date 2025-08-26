@@ -23,6 +23,9 @@ const actions: ActionTree<SignsState, State> = {
   getTime(context, payload) {
     return http.get('/signs/time', payload);
   },
+  putTime(context, payload) {
+    return http.put('/signs/time', payload);
+  },
 };
 const getters: GetterTree<SignsState, State> = {};
 

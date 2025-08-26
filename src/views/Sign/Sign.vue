@@ -21,8 +21,9 @@
     </el-descriptions-item>
   </el-descriptions>
   <el-calendar v-model="date">
+    <!-- 表头 -->
     <template #header>
-      <el-button type="primary">在线签到</el-button>
+      <el-button type="primary" @click="handlePutTime">在线签到</el-button>
       <el-space>
         <el-button plain>{{ year }}年</el-button>
         <el-select v-model="month" @change="handleChange">
@@ -35,14 +36,25 @@
         </el-select>
       </el-space>
     </template>
+    <!-- 表   -->
+    <template #date-cell="{ data }">
+      <div>{{ renderDate(data.day) }}</div>
+      <div class="show-time">{{ renderTime(data.day) }}</div>
+    </template>
   </el-calendar>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useStore } from '@/store';
+import { ElMessage } from 'element-plus';
 
 const router = useRouter();
+const store = useStore();
+
+const signsInfos = computed(() => store.state.signs.infos);
+const usersInfos = computed(() => store.state.users.infos);
 
 const date = ref(new Date());
 const year = date.value.getFullYear();
@@ -74,12 +86,39 @@ const detailState = reactive({
 });
 
 const handleChange = () => {
-  // console.log(month.value);
   date.value = new Date(`${year}.${month.value}`);
 };
 
 const handleToException = () => {
   router.push('/exception');
+};
+
+const renderDate = (day: string) => {
+  return day.split('-')[2];
+};
+
+const renderTime = (day: string) => {
+  const [, month, date] = day.split('-');
+
+  const ret = (
+    (signsInfos.value.time as { [index: string]: unknown })[month] as {
+      [index: string]: unknown;
+    }
+  )[date];
+  if (Array.isArray(ret)) {
+    return ret.join('-');
+  }
+};
+
+const handlePutTime = () => {
+  store
+    .dispatch('signs/putTime', { userid: usersInfos.value._id })
+    .then((res) => {
+      if (res.data.errcode === 0) {
+        store.commit('signs/updateInfos', res.data.infos);
+        ElMessage.success('签到成功');
+      }
+    });
 };
 </script>
 
@@ -89,5 +128,12 @@ const handleToException = () => {
 }
 .el-select {
   width: 80px;
+}
+.show-time {
+  text-align: center;
+  line-height: 40px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 </style>
