@@ -45,10 +45,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from '@/store';
 import { ElMessage } from 'element-plus';
+import { toZero } from '@/utils/common';
 
 const router = useRouter();
 const store = useStore();
@@ -83,6 +84,58 @@ const detailValue = reactive({
 const detailState = reactive({
   type: 'success' as 'success' | 'danger',
   text: '正常' as '正常' | '异常',
+});
+
+// todo
+watchEffect((reset) => {
+  const detailMonth = (signsInfos.value.detail as { [index: string]: unknown })[
+    toZero(month.value)
+  ] as { [index: string]: unknown };
+
+  for (const attr in detailMonth) {
+    switch (detailMonth[attr]) {
+      case DetailKey.normal:
+        detailValue.normal++;
+        break;
+      case DetailKey.absent:
+        detailValue.absent++;
+        break;
+      case DetailKey.miss:
+        detailValue.miss++;
+        break;
+      case DetailKey.late:
+        detailValue.late++;
+        break;
+      case DetailKey.early:
+        detailValue.early++;
+        break;
+      case DetailKey.lateAndEarly:
+        detailValue.lateAndEarly++;
+        break;
+    }
+  }
+
+  for (const attr in detailValue) {
+    // todo
+    if (
+      attr !== 'normal' &&
+      detailValue[attr as keyof typeof detailValue] !== 0
+    ) {
+      detailState.type = 'danger';
+      detailState.text = '异常';
+      // todo 这里可以优化，如果走进来，就停止循环
+    }
+  }
+
+  reset(() => {
+    detailState.type = 'success';
+    detailState.text = '正常';
+
+    for (const attr in detailValue) {
+      // todo
+      detailValue[attr as keyof typeof detailValue] = 0;
+    }
+  });
 });
 
 const handleChange = () => {
