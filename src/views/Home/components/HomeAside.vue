@@ -43,7 +43,7 @@ const menus = _.cloneDeep(router.options.routes).filter((v) => {
   );
 });
 
-console.log(router);
+// console.log(router);
 </script>
 
 <style scoped lang="scss">

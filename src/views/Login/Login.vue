@@ -106,7 +106,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.validate((valid) => {
     if (valid) {
-      console.log(ruleForm);
+      // console.log(ruleForm);
       store.dispatch('users/login', ruleForm).then((res) => {
         if (res.data.errcode == 0) {
           store.commit('users/updateToken', res.data.token);
