@@ -2,14 +2,26 @@ import http from '@/utils/http';
 import type { MutationTree, ActionTree, GetterTree } from 'vuex';
 import type { State } from '../index';
 
-export interface SignsState {}
+interface Infos {
+  [index: string]: unknown;
+}
 
-const state: SignsState = {};
+export interface SignsState {
+  infos: Infos;
+}
 
-const mutations: MutationTree<SignsState> = {};
+const state: SignsState = {
+  infos: {},
+};
+
+const mutations: MutationTree<SignsState> = {
+  updateInfos(state, payload) {
+    state.infos = payload;
+  },
+};
 const actions: ActionTree<SignsState, State> = {
-  login() {
-    return http.post('/users/login');
+  getTime(context, payload) {
+    return http.get('/signs/time', payload);
   },
 };
 const getters: GetterTree<SignsState, State> = {};

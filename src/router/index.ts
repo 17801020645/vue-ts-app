@@ -43,6 +43,23 @@ const routes: Array<RouteRecordRaw> = [
           icon: 'calendar',
           auth: true,
         },
+        beforeEnter(to, from, next) {
+          const userInfos = (store.state as StateAll).users.infos;
+          const signsInfos = (store.state as StateAll).signs.infos;
+
+          if (_.isEmpty(signsInfos)) {
+            store
+              .dispatch('signs/getTime', { userid: userInfos._id })
+              .then((res) => {
+                if (res.data.errcode == 0) {
+                  store.commit('signs/updateInfos', res.data.infos);
+                  next();
+                }
+              });
+          } else {
+            next();
+          }
+        },
       },
       {
         path: 'exception',
@@ -100,6 +117,7 @@ router.beforeEach((to, from, next) => {
       store.dispatch('users/infos').then((res) => {
         if (res.data.errcode === 0) {
           store.commit('users/updateInfos', res.data.infos);
+
           next();
         }
       });
