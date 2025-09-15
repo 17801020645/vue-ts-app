@@ -14,25 +14,27 @@
     </el-space>
   </div>
   <div class="apply-table">
-    <el-table :data="applyList" border>
+    <el-table :data="pageApplyList" border>
       <el-table-column prop="applicantname" label="申请人" width="180" />
       <el-table-column prop="reason" label="审批事由" width="180" />
       <el-table-column prop="time" label="时间">
-        <!-- <template #default="scope">
+        <template #default="scope">
           {{ scope.row.time.join(' - ') }}
-        </template> -->
+        </template>
       </el-table-column>
       <el-table-column prop="note" label="备注" />
       <el-table-column prop="approvername" label="审批人" width="180" />
       <el-table-column prop="state" label="状态" width="180" />
     </el-table>
     <el-pagination
-      small
+      size="small"
       background
-      layout="prev, pager, next"
+      layout="jumper,sizes,prev, pager, next,total"
       :total="applyList.length"
       :page-size="pageSize"
-      @current-change="handleChange"
+      :page-sizes="pageSizes"
+      @current-change="handleCurrentChange"
+      @size-change="handleSizeChange"
     />
   </div>
 </template>
@@ -46,13 +48,16 @@ const applyList = computed(() => store.state.checks.applyList);
 
 const defaultType = '全部';
 const approverType = ref(defaultType);
-
 const searchWord = ref('');
-
 const pageCurrent = ref(1);
 const pageSize = ref(2);
-const handleChange = (value: number) => {
-  pageCurrent.value = value;
+const pageSizes = ref([10, 20, 30, 40]);
+
+const handleSizeChange = (val: number) => {
+  pageSize.value = val;
+};
+const handleCurrentChange = (val: number) => {
+  pageCurrent.value = val;
 };
 const pageApplyList = computed(() =>
   applyList.value.slice(
@@ -67,5 +72,12 @@ const pageApplyList = computed(() =>
   margin: 20px;
   display: flex;
   justify-content: space-between;
+}
+.apply-table {
+  margin: 10px;
+  .el-pagination {
+    float: right;
+    margin: 10px;
+  }
 }
 </style>
