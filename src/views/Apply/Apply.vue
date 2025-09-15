@@ -1,6 +1,6 @@
 <template>
   <div class="apply-title">
-    <el-button type="primary">添加审批</el-button>
+    <el-button type="primary" @click="handleOpen">添加审批</el-button>
     <el-space>
       <el-input v-model="searchWord" placeholder="请输入搜索关键词" />
       <el-button type="primary" icon="search">搜索</el-button>
@@ -49,13 +49,81 @@
       @size-change="handleSizeChange"
     />
   </div>
+  <el-dialog
+    v-model="dialogVisible"
+    title="添加审批"
+    width="500px"
+    :before-close="handleClose"
+  >
+    <el-form
+      ref="ruleFormRef"
+      :model="ruleForm"
+      :rules="rules"
+      label-width="80px"
+    >
+      <el-form-item label="审批人" prop="approvername">
+        <el-select v-model="ruleForm.approvername" placeholder="请选择审批人">
+          <el-option
+            v-for="item in approver"
+            :key="(item._id as string)"
+            :value="(item.name as string)"
+            :label="(item.name as string)"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="审批事由" prop="reason">
+        <el-select v-model="ruleForm.reason" placeholder="请选择审批事由">
+          <el-option value="年假" label="年假" />
+          <el-option value="事假" label="事假" />
+          <el-option value="病假" label="病假" />
+          <el-option value="外出" label="外出" />
+          <el-option value="补签卡" label="补签卡" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="时间" prop="time">
+        <el-date-picker
+          v-model="ruleForm.time"
+          type="datetimerange"
+          start-placeholder="起始日期"
+          end-placeholder="结束日期"
+        />
+      </el-form-item>
+      <el-form-item label="备注" prop="note">
+        <el-input
+          v-model="ruleForm.note"
+          :autosize="{ minRows: 4, maxRows: 6 }"
+          type="textarea"
+          placeholder="请输入备注"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="resetForm(ruleFormRef)">重置</el-button>
+      <el-button type="primary" @click="submitForm(ruleFormRef)"
+        >提交</el-button
+      >
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useStore } from '@/store';
 import type { TableTooltipData } from 'element-plus';
 import type { ChecksState } from '@/store/modules/checks';
+import { ElMessage } from 'element-plus';
+import type { DateModelType, FormInstance, FormRules } from 'element-plus';
+import moment from 'moment';
+
+interface ApplyList {
+  applicantid: string;
+  applicantname: string;
+  approverid: string;
+  approvername: string;
+  note: string;
+  reason: string;
+  time: [DateModelType, DateModelType];
+}
 
 const store = useStore();
 
@@ -63,6 +131,10 @@ const defaultType = '全部';
 const approverType = ref(defaultType);
 const searchWord = ref('');
 
+const usersInfos = computed(() => store.state.users.infos);
+const approver = computed(
+  () => usersInfos.value.approver as { [index: string]: unknown }[]
+);
 const applyList = computed(() =>
   store.state.checks.applyList.filter(
     (v) =>
@@ -74,6 +146,7 @@ const applyList = computed(() =>
 const pageCurrent = ref(1);
 const pageSize = ref(2);
 const pageSizes = ref([10, 20, 30, 40]);
+const dialogVisible = ref(false);
 
 const handleSizeChange = (val: number) => {
   pageSize.value = val;
@@ -90,6 +163,77 @@ const pageApplyList = computed(() =>
 
 const tableRowFormatter = (data: TableTooltipData<ChecksState>) => {
   return `${data.cellValue}`;
+};
+
+const handleClose = () => {
+  dialogVisible.value = false;
+};
+
+const handleOpen = () => {
+  dialogVisible.value = true;
+};
+
+const ruleFormRef = ref<FormInstance>();
+
+const ruleForm = reactive<ApplyList>({
+  applicantid: '',
+  applicantname: '',
+  approverid: '',
+  approvername: '',
+  note: '',
+  reason: '',
+  time: ['', ''],
+});
+
+const rules = reactive<FormRules>({
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' },
+  ],
+  pass: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+});
+
+const submitForm = (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  formEl.validate((valid) => {
+    if (valid) {
+      ruleForm.applicantid = usersInfos.value._id as string;
+      ruleForm.applicantname = usersInfos.value.name as string;
+      ruleForm.approverid = (
+        approver.value.find((v) => v.name === ruleForm.approvername) as {
+          [index: string]: unknown;
+        }
+      )._id as string;
+      ruleForm.time[0] = moment(ruleForm.time[0]).format('YYYY-MM-DD hh:mm:ss');
+      ruleForm.time[1] = moment(ruleForm.time[1]).format('YYYY-MM-DD hh:mm:ss');
+      store.dispatch('checks/postApply', ruleForm).then((res) => {
+        if (res.data.errcode === 0) {
+          store
+            .dispatch('checks/getApply', { applicantid: usersInfos.value._id })
+            .then((res) => {
+              if (res.data.errcode === 0) {
+                store.commit('checks/updateApplyList', res.data.rets);
+              }
+            });
+          store.dispatch('news/putRemind', {
+            userid: ruleForm.approverid,
+            approver: true,
+          });
+          ElMessage.success('添加审批成功');
+          resetForm(ruleFormRef.value);
+          handleClose();
+        }
+      });
+    } else {
+      console.log('error submit!');
+      return false;
+    }
+  });
+};
+
+const resetForm = (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  formEl.resetFields();
 };
 </script>
 
