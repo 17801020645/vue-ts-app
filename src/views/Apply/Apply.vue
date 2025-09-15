@@ -4,7 +4,7 @@
     <el-space>
       <el-input v-model="searchWord" placeholder="请输入搜索关键词" />
       <el-button type="primary" icon="search">搜索</el-button>
-      <el-divider direction="vertical" />
+      <el-divider direction="vertical" border-style="dashed" />
       <el-radio-group
         v-model="approverType"
         text-color="#626aef"
