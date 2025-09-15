@@ -5,7 +5,12 @@
       <el-input v-model="searchWord" placeholder="请输入搜索关键词" />
       <el-button type="primary" icon="search">搜索</el-button>
       <el-divider direction="vertical" />
-      <el-radio-group v-model="approverType">
+      <el-radio-group
+        v-model="approverType"
+        text-color="#626aef"
+        fill="rgb(239, 240, 253)"
+        size="default"
+      >
         <el-radio-button label="全部" />
         <el-radio-button label="待审批" />
         <el-radio-button label="已通过" />
@@ -55,7 +60,7 @@ import type { ChecksState } from '@/store/modules/checks';
 const store = useStore();
 const applyList = computed(() => store.state.checks.applyList);
 
-const defaultType = '全部';
+const defaultType = '已通过';
 const approverType = ref(defaultType);
 const searchWord = ref('');
 const pageCurrent = ref(1);
