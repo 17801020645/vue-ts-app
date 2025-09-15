@@ -14,7 +14,14 @@
     </el-space>
   </div>
   <div class="apply-table">
-    <el-table :data="pageApplyList" border>
+    <el-table
+      :data="pageApplyList"
+      stripe
+      border
+      height="500"
+      show-overflow-tooltip
+      :tooltip-formatter="tableRowFormatter"
+    >
       <el-table-column prop="applicantname" label="申请人" width="180" />
       <el-table-column prop="reason" label="审批事由" width="180" />
       <el-table-column prop="time" label="时间">
@@ -42,6 +49,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useStore } from '@/store';
+import type { TableTooltipData } from 'element-plus';
+import type { ChecksState } from '@/store/modules/checks';
 
 const store = useStore();
 const applyList = computed(() => store.state.checks.applyList);
@@ -65,6 +74,10 @@ const pageApplyList = computed(() =>
     pageCurrent.value * pageSize.value
   )
 );
+
+const tableRowFormatter = (data: TableTooltipData<ChecksState>) => {
+  return `${data.cellValue}`;
+};
 </script>
 
 <style scoped lang="scss">
