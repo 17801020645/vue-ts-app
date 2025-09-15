@@ -91,14 +91,18 @@ const handleToApply = () => {
   router.push('/apply');
 };
 
-// todo ret得到这里在看下
-const renderTime = (date: string) => {
+const renderTime = (date: string): string => {
+  // time的类型为； [index: string]: unknown
+  // 通过toZero(month.value)拿到月份数据；[index: string]: unknown
+  // 最终，通过date拿到某天具体的打卡数据
   const ret = (
     (signsInfos.value.time as { [index: string]: unknown })[
       toZero(month.value)
     ] as { [index: string]: unknown }
   )[date];
+  // 断言，是否为数组
   if (Array.isArray(ret)) {
+    // 拼接为字符串
     return ret.join('-');
   } else {
     return '暂无打卡记录';

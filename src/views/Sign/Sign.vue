@@ -117,14 +117,18 @@ watchEffect((reset) => {
   }
 
   for (const attr in detailValue) {
-    // todo
+    // 这行代码的意思是：
+    // typeof detailValue - 获取 detailValue 变量的类型
+    // keyof typeof detailValue - 获取该类型的所有键（属性名）的联合类型
+    // attr as keyof typeof detailValue - 将 attr 断言为这些键之一
+    // 最后检查该属性的值是否不等于 0
     if (
       attr !== 'normal' &&
       detailValue[attr as keyof typeof detailValue] !== 0
     ) {
       detailState.type = 'danger';
       detailState.text = '异常';
-      // todo 这里可以优化，如果走进来，就停止循环
+      break;
     }
   }
 
