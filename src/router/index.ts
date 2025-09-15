@@ -99,6 +99,22 @@ const routes: Array<RouteRecordRaw> = [
           icon: 'document-add',
           auth: true,
         },
+        async beforeEnter(to, from, next) {
+          const usersInfos = (store.state as StateAll).users.infos;
+          const checksApplyList = (store.state as StateAll).checks.applyList;
+
+          if (_.isEmpty(checksApplyList)) {
+            const res = await store.dispatch('checks/getApply', {
+              applicantid: usersInfos._id,
+            });
+            if (res.data.errcode === 0) {
+              store.commit('checks/updateApplyList', res.data.rets);
+            } else {
+              return;
+            }
+          }
+          next();
+        },
       },
       {
         path: 'check',
