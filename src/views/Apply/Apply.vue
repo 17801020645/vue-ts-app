@@ -58,11 +58,19 @@ import type { TableTooltipData } from 'element-plus';
 import type { ChecksState } from '@/store/modules/checks';
 
 const store = useStore();
-const applyList = computed(() => store.state.checks.applyList);
 
-const defaultType = '已通过';
+const defaultType = '全部';
 const approverType = ref(defaultType);
 const searchWord = ref('');
+
+const applyList = computed(() =>
+  store.state.checks.applyList.filter(
+    (v) =>
+      (v.state === approverType.value || defaultType === approverType.value) &&
+      (v.note as string).includes(searchWord.value)
+  )
+);
+
 const pageCurrent = ref(1);
 const pageSize = ref(2);
 const pageSizes = ref([10, 20, 30, 40]);
