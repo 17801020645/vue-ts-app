@@ -2,14 +2,29 @@ import http from '@/utils/http';
 import type { MutationTree, ActionTree, GetterTree } from 'vuex';
 import type { State } from '../index';
 
-export interface NewsState {}
+interface Info {
+  [index: string]: unknown;
+}
 
-const state: NewsState = {};
+export interface NewsState {
+  info: Info;
+}
 
-const mutations: MutationTree<NewsState> = {};
+const state: NewsState = {
+  info: {},
+};
+
+const mutations: MutationTree<NewsState> = {
+  updateInfo(state, payload) {
+    state.info = payload;
+  },
+};
 const actions: ActionTree<NewsState, State> = {
-  login() {
-    return http.post('/users/login');
+  getRemind(context, payload) {
+    return http.get('news/remind', payload);
+  },
+  putRemind(context, payload) {
+    return http.put('news/remind', payload);
   },
 };
 const getters: GetterTree<NewsState, State> = {};

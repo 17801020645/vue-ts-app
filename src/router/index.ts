@@ -126,6 +126,33 @@ const routes: Array<RouteRecordRaw> = [
           icon: 'finished',
           auth: true,
         },
+        async beforeEnter(to, from, next) {
+          const usersInfos = (store.state as StateAll).users.infos;
+          const checksCheckList = (store.state as StateAll).checks.checkList;
+          const newsInfo = (store.state as StateAll).news.info;
+          if (_.isEmpty(checksCheckList)) {
+            const res = await store.dispatch('checks/getApply', {
+              approverid: usersInfos._id,
+            });
+            if (res.data.errcode === 0) {
+              store.commit('checks/updateCheckList', res.data.rets);
+            } else {
+              return;
+            }
+          }
+          if (newsInfo.approver) {
+            const res = await store.dispatch('news/putRemind', {
+              userid: usersInfos._id,
+              approver: false,
+            });
+            if (res.data.errcode === 0) {
+              store.commit('news/updateInfo', res.data.info);
+            } else {
+              return;
+            }
+          }
+          next();
+        },
       },
     ],
   },
