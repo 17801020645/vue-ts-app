@@ -9,6 +9,9 @@ const Sign = () => import('@/views/Sign/Sign.vue');
 const Check = () => import('@/views/Check/Check.vue');
 const Exception = () => import('@/views/Exception/Exception.vue');
 const Apply = () => import('@/views/Apply/Apply.vue');
+const NoAuth = () => import('@/views/NoAuth/NoAuth.vue');
+const NoFound = () => import('@/views/NoFound/NoFound.vue');
+const NoServer = () => import('@/views/NoServer/NoServer.vue');
 
 // typescript 添加元数据
 declare module 'vue-router' {
@@ -161,6 +164,25 @@ const routes: Array<RouteRecordRaw> = [
     name: 'login',
     component: Login,
   },
+  {
+    path: '/403',
+    name: 'noAuth',
+    component: NoAuth,
+  },
+  {
+    path: '/404',
+    name: 'noFound',
+    component: NoFound,
+  },
+  {
+    path: '/500',
+    name: 'noServer',
+    component: NoServer,
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/404',
+  },
 ];
 
 const router = createRouter({
@@ -171,14 +193,20 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = (store.state as StateAll).users.token;
   const infos = (store.state as StateAll).users.infos;
+  console.log(infos);
+  console.log(to);
+  console.log(from);
 
   if (to.meta.auth && _.isEmpty(infos)) {
     if (token) {
       store.dispatch('users/infos').then((res) => {
         if (res.data.errcode === 0) {
           store.commit('users/updateInfos', res.data.infos);
-
-          next();
+          if (res.data.infos.permission.includes(to.name)) {
+            next();
+          } else {
+            next('/403');
+          }
         }
       });
     } else {
